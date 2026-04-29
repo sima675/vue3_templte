@@ -2,9 +2,7 @@
   <a-layout-header class="header">
     <div class="logo-wrap">
       <router-link :to="{ path: '/' }">
-        <img :src="logo" class="logo" alt="logo" />
-        <h1 class="title"> {{ APP_TITLE }} </h1>
-        <!-- <span class="subTitle">基础版</span> -->
+        <h1 class="brand">DINSTAR</h1>
       </router-link>
     </div>
     <div>
@@ -14,8 +12,6 @@
 </template>
 <script setup lang="ts">
   import RightContent from './RightContent.vue';
-  import logo from '/@/assets/images/logo.png';
-  import { APP_TITLE } from '../../../../config/constant';
 </script>
 <style lang="less" scoped>
   .header {
@@ -35,15 +31,12 @@
         align-items: center;
         height: 100%;
       }
-      .title {
+      .brand {
         margin: 0;
-        margin-left: 12px;
-        font-size: 18px;
-        color: #000000;
-      }
-      .logo {
-        width: 48px;
-        height: 48px;
+        color: #0b76e0;
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
       }
     }
   }

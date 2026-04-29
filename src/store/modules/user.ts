@@ -3,12 +3,13 @@ import { store } from '/@/store';
 import { ReqParams } from '/@/api/user/model';
 import fetchApi from '/@/api/user';
 // import { encryptByDES } from '/@/utils/crypto';
-import { getToken, setToken, removeToken } from '/@/utils/auth';
+import { getToken, setToken, removeToken, setAccountType, removeAccountType } from '/@/utils/auth';
 import { router } from '/@/router';
 
 interface UserState {
   token: string;
   auths: string[];
+  accountType: string;
 }
 
 export const useUserStore = defineStore({
@@ -18,6 +19,7 @@ export const useUserStore = defineStore({
     token: '',
     // auths
     auths: [],
+    accountType: '',
   }),
   getters: {
     getToken(): string {
@@ -35,6 +37,7 @@ export const useUserStore = defineStore({
     resetState() {
       this.token = '';
       this.auths = [];
+      this.accountType = '';
     },
     /**
      * @description: login
@@ -46,6 +49,8 @@ export const useUserStore = defineStore({
       if (res) {
         // save token
         this.setToken(res.token);
+        this.accountType = res.account_type || '';
+        setAccountType(this.accountType);
       }
       return res;
     },
@@ -56,6 +61,7 @@ export const useUserStore = defineStore({
     async logout() {
       this.resetState();
       removeToken();
+      removeAccountType();
       router.replace('/login');
       // 路由表重置
       location.reload();

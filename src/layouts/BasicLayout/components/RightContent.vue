@@ -11,17 +11,16 @@
           </a-menu-item>
         </a-menu>
       </template>
-      <Space class="wrap" align="baseline" direction="horizontal">
+      <button class="settings-trigger" type="button">
         <Icon align="2px" type="xitongshezhi" />
         <span class="setting">系统设置</span>
         <Icon align="2px" type="xialajiantou" />
-      </Space>
+      </button>
     </a-dropdown>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { Space } from 'ant-design-vue';
   import { useUserStore } from '/@/store/modules/user';
   import { navs as myNavs } from './constant';
   import { usePermissioStore } from '/@/store/modules/permission';
@@ -49,7 +48,6 @@
 
   const handleRoute = (path?: string) => {
     if (path) return router.push(path);
-    // 退出登录
     store.logout();
   };
 </script>
@@ -58,19 +56,28 @@
   .sys-setting {
     height: 100%;
     display: flex;
+    align-items: center;
     justify-content: center;
     padding-right: 16px;
-    .wrap {
-      height: 55px;
 
-      .setting {
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 22px;
-        color: rgba(0, 0, 0, 0.85);
-        margin: 0 8px 0 4px;
-      }
+    .settings-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 40px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
     }
+
+    .setting {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 22px;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
     .my-icon {
       font-size: 18px !important;
     }

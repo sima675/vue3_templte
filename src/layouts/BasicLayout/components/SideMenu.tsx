@@ -1,10 +1,9 @@
-import { Layout, Menu, Space } from 'ant-design-vue';
+import { Layout, Menu } from 'ant-design-vue';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons-vue';
 import Icon from '/@/components/Icon/index.vue';
-import { PropType, h, Transition } from 'vue';
+import { PropType, h } from 'vue';
 import { MenuDataItem } from '../utils/typings';
 import { router } from '/@/router';
-import { APP_TITLE } from '../../../../config/constant';
 import './index.less';
 
 export default defineComponent({
@@ -86,19 +85,7 @@ export default defineComponent({
           onBreakpoint={(val) => (state.collapsed = val)}
           collapsible
           collapsed={state.collapsed}
-          // collapsedWidth={48}
         >
-          {/* logo */}
-          <Transition name="fade-top">
-            {!state.collapsed && (
-              <div class="my-sideMenu-sider_logo">
-                <Space align="center" class="link">
-                  <Icon type="guanlipingtai" size="20px" align="0px" />
-                  <span class="font16 nowrap">{APP_TITLE}</span>
-                </Space>
-              </div>
-            )}
-          </Transition>
           {/* menu */}
           <Menu
             theme="light"
