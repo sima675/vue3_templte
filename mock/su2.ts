@@ -98,6 +98,27 @@ const queues = [
   },
 ];
 
+let operatorSignedStatus = 'Logged Out';
+
+let nightStrategies = [
+  {
+    id: 1,
+    policyName: '默认夜服',
+    activationType: 'sipExtension',
+    extensionNumber: '8008',
+    extensionIndex: 9,
+    number: '',
+    closeType: 'playback',
+    soundName: '默认提示音',
+    soundKey: '0',
+    createAt: '2026-04-29 05:46:45',
+    updateAt: '2026-04-29 05:46:45',
+    remark: '下班后播放提示音',
+  },
+];
+
+let currentNightStrategyId = 0;
+
 let businessSetting = {
   extension: '8000',
   voicemail: 'off',
@@ -194,6 +215,68 @@ const cdrRecords = [
     fee: '-',
     room_number: '',
     guest_name: '',
+  },
+];
+
+const attendantCdrRecords = [
+  {
+    ...cdrRecords[0],
+    uuid: 'attendant-call-1',
+    destination_number: '8003',
+    direction: 'in',
+    cdrTypeName: '呼入',
+    name: '8003',
+    extension: '8000',
+    sip: '8000',
+    duration: '32',
+    start_time: '2026-04-30 09:30:00',
+    area_call: '内部',
+    queue: '123456',
+  },
+  {
+    ...cdrRecords[1],
+    uuid: 'attendant-call-2',
+    destination_number: '13800000000',
+    direction: 'out',
+    cdrTypeName: '呼出',
+    name: '客户A',
+    extension: '8000',
+    sip: '8000',
+    duration: '186',
+    start_time: '2026-04-30 10:12:00',
+    area_call: '国内',
+    queue: '123456',
+  },
+];
+
+const hotelCdrRecords = [
+  {
+    ...cdrRecords[0],
+    uuid: 'hotel-call-1',
+    destination_number: '10086',
+    direction: 'out',
+    cdrTypeName: '呼出',
+    room_number: '101',
+    guest_name: '张三',
+    extension: '8040',
+    sip: '8040',
+    duration: '65',
+    start_time: '2026-04-30 12:10:00',
+    area_call: '国内',
+  },
+  {
+    ...cdrRecords[1],
+    uuid: 'hotel-call-2',
+    destination_number: '8000',
+    direction: 'in',
+    cdrTypeName: '呼入',
+    room_number: '201',
+    guest_name: '李四',
+    extension: '8041',
+    sip: '8041',
+    duration: '22',
+    start_time: '2026-04-30 13:20:00',
+    area_call: '内部',
   },
 ];
 
@@ -294,6 +377,126 @@ let alarmLogs = [
     sip: '8002',
   },
 ];
+
+let hotelPositions = [
+  {
+    id: 1,
+    name: '1栋',
+    pid: 0,
+    children: [
+      { id: 3, name: '1层', pid: 1, children: null },
+      { id: 4, name: '2层', pid: 1, children: null },
+    ],
+  },
+];
+
+let hotelRoomTypes = [
+  { id: 1, name: '单人房', cup: 1 },
+  { id: 2, name: '中房', cup: 2 },
+];
+
+let hotelRooms = [
+  {
+    id: 1,
+    position_id: 3,
+    position: '1栋-1层',
+    extension: '8040',
+    room_number: '101',
+    room_type_id: 2,
+    room_type: '中房',
+    room_cup: 2,
+    status: 2,
+    alarm_count: 0,
+    vacant: 1,
+    vip: 0,
+    repair_status: 1,
+    clean_status: 1,
+    check_status: 1,
+    guest_name: '',
+  },
+  {
+    id: 2,
+    position_id: 4,
+    position: '1栋-2层',
+    extension: '8041',
+    room_number: '201',
+    room_type_id: 1,
+    room_type: '单人房',
+    room_cup: 1,
+    status: 2,
+    alarm_count: 1,
+    vacant: 2,
+    vip: 1,
+    repair_status: 2,
+    clean_status: 1,
+    check_status: 1,
+    guest_name: '张三',
+  },
+];
+
+let hotelWaiters = [
+  { id: 1, name: '清洁', pinCode: '1001' },
+  { id: 2, name: '维修', pinCode: '1002' },
+];
+
+let hotelServiceCode = {
+  accessNumber: '8',
+  serviceCodeSwitch: 'on',
+  functionCodeSwitch: 'on',
+  serviceCodeChildren: [
+    { type: 1, status: 1, code: '1' },
+    { type: 1, status: 2, code: '2' },
+    { type: 1, status: 5, code: '3' },
+    { type: 2, status: 3, code: '4' },
+    { type: 2, status: 4, code: '5' },
+  ],
+  functionCodeChildren: [
+    { type: 1, status: 1, functionCode: '1' },
+    { type: 1, status: 2, functionCode: '2' },
+    { type: 1, status: 5, functionCode: '3' },
+    { type: 2, status: 3, functionCode: '4' },
+    { type: 2, status: 4, functionCode: '5' },
+  ],
+};
+
+let hotelOperationRecords = [
+  { id: 1, time: '2026-04-30 10:30:00', room: '101', code: '1', staff: '清洁', status: '干净' },
+  { id: 2, time: '2026-04-30 11:05:00', room: '201', code: '5', staff: '维修', status: '待维修' },
+];
+
+const hotelCheckinRecords = [
+  {
+    id: '2604301001-101',
+    room_number: '101',
+    checkin_at: '2026-04-30 10:01:00',
+    checkout_at: '2026-04-30 13:30:00',
+    guest_name: '张三',
+    level: '普通',
+    phone: '13800000000',
+  },
+];
+
+const hotelUserExtensions = [
+  { index: '41', name: '8040', extension: '8040' },
+  { index: '42', name: '8041', extension: '8041' },
+  { index: '43', name: '8042', extension: '8042' },
+];
+
+const getHotelRoomSnapshot = (body: Record<string, any>) => {
+  const roomType = hotelRoomTypes.find((item) => item.id === Number(body?.room_type_id));
+  const floor = hotelPositions.flatMap((item) => item.children || []).find((item) => item.id === Number(body?.position_id));
+  const building = hotelPositions.find((item) => (item.children || []).some((child) => child.id === Number(body?.position_id)));
+  return {
+    position_id: Number(body?.position_id),
+    position: `${building?.name || ''}-${floor?.name || ''}`,
+    extension: body?.extension || '',
+    room_number: body?.room_number || '',
+    room_type_id: Number(body?.room_type_id),
+    room_type: roomType?.name || '',
+    room_cup: roomType?.cup || 1,
+    status: Number(body?.status || 2),
+  };
+};
 
 const nowText = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
 
@@ -775,14 +978,37 @@ export default [
     response: () => ok(queues),
   },
   {
+    url: '/api/webapi/portal/queue/queue-operator',
+    method: 'get',
+    response: () => ok(queues),
+  },
+  {
     url: '/api/webapi/portal/queue/sign-in',
     method: 'post',
-    response: () => ok(),
+    response: ({ body }) => {
+      operatorSignedStatus = body?.status || 'Logged Out';
+      return ok();
+    },
   },
   {
     url: '/api/webapi/portal/queue/online',
     method: 'get',
     response: () => ok(sipList.filter((item) => item.status === 'online')),
+  },
+  {
+    url: '/api/webapi/portal/queue/line-up',
+    method: 'post',
+    response: () => ok(operatorSignedStatus === 'Logged Out' ? [] : [
+      { id: 1, caller: '8003', number: '8003', status: 'waiting', position: '1' },
+      { id: 2, caller: '13800000000', number: '13800000000', status: 'waiting', position: '2' },
+    ]),
+  },
+  {
+    url: '/api/webapi/portal/queue/anchor',
+    method: 'get',
+    response: () => ok(operatorSignedStatus === 'Logged Out' ? [] : [
+      { id: 1, number: '100', caller: '8006', status: 'parked', position: '100' },
+    ]),
   },
   {
     url: '/api/webapi/portal/queue/sip-list',
@@ -792,7 +1018,10 @@ export default [
   {
     url: '/api/webapi/portal/queue/operator-list',
     method: 'post',
-    response: () => ok(null),
+    response: () => ok([
+      { user: '8000', name: '8000', status: operatorSignedStatus === 'Logged Out' ? 'Logged Out' : 'Logged In', state: operatorSignedStatus },
+      { user: '8001', name: '8001', status: 'Logged Out', state: 'rest' },
+    ]),
   },
   {
     url: '/api/webapi/portal/queue/night-status',
@@ -808,36 +1037,99 @@ export default [
   {
     url: '/api/webapi/portal/queue/call-monitor',
     method: 'get',
-    response: () => ok(null),
+    response: () => ok(operatorSignedStatus === 'Logged Out' ? [] : [
+      { uuid: 'monitor-1', caller: '8003', callee: '8000', state: 'talking', start_time: '2026-04-30 10:30:00' },
+    ]),
   },
   {
     url: '/api/webapi/portal/nightwear-strategy/list',
     method: 'get',
-    response: () => ok([]),
+    response: () => ok(nightStrategies),
+  },
+  {
+    url: '/api/webapi/portal/nightwear-strategy/page',
+    method: 'post',
+    response: ({ body }) => {
+      const kw = String(body?.policyName || '').trim();
+      const filtered = nightStrategies.filter((item) => !kw || item.policyName.includes(kw));
+      return ok({
+        total: filtered.length,
+        pageSize: body?.pageSize || 10,
+        pageNum: body?.pageNum || 1,
+        records: filtered,
+      });
+    },
+  },
+  {
+    url: '/api/webapi/portal/nightwear-strategy/add',
+    method: 'post',
+    response: ({ body }) => {
+      nightStrategies = [
+        {
+          id: Date.now(),
+          createAt: nowText(),
+          updateAt: nowText(),
+          extensionIndex: 0,
+          soundName: '',
+          soundKey: '',
+          number: '',
+          extensionNumber: '',
+          remark: '',
+          ...body,
+        },
+        ...nightStrategies,
+      ];
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/nightwear-strategy/edit',
+    method: 'post',
+    response: ({ body }) => {
+      nightStrategies = nightStrategies.map((item) =>
+        item.id === Number(body?.id) ? { ...item, ...body, updateAt: nowText() } : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/nightwear-strategy/hot-update',
+    method: 'get',
+    response: () => ok(),
+  },
+  {
+    url: '/api/webapi/portal/nightwear-strategy/del',
+    method: 'get',
+    response: ({ query }) => {
+      nightStrategies = nightStrategies.filter((item) => item.id !== Number(query?.id));
+      return ok();
+    },
   },
   {
     url: '/api/webapi/portal/nightwear-strategy/find-strategy',
     method: 'get',
-    response: () =>
-      ok({
-        id: 0,
-        policyName: '',
-        activationType: '',
-        extensionNumber: '',
-        extensionIndex: 0,
-        number: '',
-        closeType: '',
-        soundName: '',
-        soundKey: '',
-        createAt: null,
-        updateAt: null,
-        remark: '',
-      }),
+    response: () => ok(nightStrategies.find((item) => item.id === currentNightStrategyId) || {
+      id: 0,
+      policyName: '',
+      activationType: '',
+      extensionNumber: '',
+      extensionIndex: 0,
+      number: '',
+      closeType: '',
+      soundName: '',
+      soundKey: '',
+      createAt: null,
+      updateAt: null,
+      remark: '',
+    }),
   },
   {
     url: '/api/webapi/portal/nightwear-strategy/set-strategy',
     method: 'post',
-    response: () => ok(),
+    response: ({ body }) => {
+      currentNightStrategyId = body?.ifOpen ? Number(body?.strategyId || 0) : 0;
+      return ok();
+    },
   },
   {
     url: '/api/webapi/portal/voicemail/page',
@@ -866,13 +1158,15 @@ export default [
   {
     url: '/api/webapi/portal/cdr/page',
     method: 'post',
-    response: ({ body }) =>
-      ok({
-        total: cdrRecords.length,
+    response: ({ body }) => {
+      const records = body?.type === 'Pms' ? hotelCdrRecords : body?.type === 'Attendant' ? attendantCdrRecords : cdrRecords;
+      return ok({
+        total: records.length,
         pageSize: body?.pageSize || 10,
         pageNum: body?.pageNum || 1,
-        records: cdrRecords,
-      }),
+        records,
+      });
+    },
   },
   {
     url: '/api/webapi/portal/cdr/add-remark',
@@ -890,22 +1184,30 @@ export default [
     method: 'get',
     response: () =>
       ok({
-        queue_sum: 0,
-        queue_available: 0,
-        in_count: 0,
-        connect_count: 0,
-        caller_busy_count: 0,
-        talk_sum_time: 0,
-        talk_time_max: 0,
-        talk_time_min: 0,
-        waiting_time_sum: 0,
-        waiting_time_max: 0,
+        queue_sum: 1,
+        queue_available: operatorSignedStatus === 'Logged Out' ? 0 : 1,
+        in_count: 18,
+        connect_count: 15,
+        caller_busy_count: 2,
+        talk_sum_time: 2680,
+        talk_time_max: 420,
+        talk_time_min: 8,
+        waiting_time_sum: 360,
+        waiting_time_max: 70,
       }),
   },
   {
     url: '/api/webapi/portal/cdr/extension-page',
     method: 'post',
-    response: ({ body }) => ok({ page_num: body?.page_num || 1, page_size: body?.page_size || 10, total: 0, data: null }),
+    response: ({ body }) => ok({
+      page_num: body?.page_num || 1,
+      page_size: body?.page_size || 10,
+      total: 2,
+      data: [
+        { extension: '8000', name: '8000', connect_count: 12, talk_sum_time: 1820, waiting_time_sum: 120 },
+        { extension: '8001', name: '8001', connect_count: 3, talk_sum_time: 860, waiting_time_sum: 240 },
+      ],
+    }),
   },
   {
     url: '/api/webapi/portal/alarm/tone',
@@ -1029,8 +1331,352 @@ export default [
   {
     url: '/api/webapi/portal/prompt',
     method: 'delete',
+    response: ({ body, query }) => {
+      promptList = promptList.filter((item) => item.id !== Number(query?.id || body?.id));
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/list',
+    method: 'get',
+    response: ({ query }) => {
+      const kw = String(query?.kw || '').trim();
+      return ok(
+        hotelRooms.filter((item) => {
+          const matchKw =
+            !kw ||
+            item.room_number.includes(kw) ||
+            item.extension.includes(kw) ||
+            item.guest_name.includes(kw);
+          const matchPosition = !query?.position || item.position_id === Number(query.position);
+          const matchVacant = !query?.vacant || item.vacant === Number(query.vacant);
+          const matchStatus = !query?.ifok || item.status === Number(query.ifok);
+          return matchKw && matchPosition && matchVacant && matchStatus;
+        }),
+      );
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/repair-status',
+    method: 'put',
     response: ({ body }) => {
-      promptList = promptList.filter((item) => item.id !== body?.id);
+      hotelRooms = hotelRooms.map((item) =>
+        item.id === Number(body?.id) ? { ...item, repair_status: body?.repair_status } : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/clean-status',
+    method: 'put',
+    response: ({ body }) => {
+      hotelRooms = hotelRooms.map((item) =>
+        item.id === Number(body?.id) ? { ...item, clean_status: body?.clean_status } : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/check-status',
+    method: 'put',
+    response: ({ body }) => {
+      hotelRooms = hotelRooms.map((item) =>
+        item.id === Number(body?.id) ? { ...item, check_status: body?.check_status } : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/checkin-detail/list',
+    method: 'get',
+    response: ({ query }) => ok({
+      pageNum: Number(query?.pageNum || 1),
+      pageSize: Number(query?.pageSize || 10),
+      total: hotelCheckinRecords.length,
+      data: hotelCheckinRecords,
+    }),
+  },
+  {
+    url: '/api/webapi/portal/service-code/list',
+    method: 'post',
+    response: () => ok(hotelServiceCode),
+  },
+  {
+    url: '/api/webapi/portal/service-code/edit',
+    method: 'post',
+    response: ({ body }) => {
+      hotelServiceCode = { ...hotelServiceCode, ...body };
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/waiter/page',
+    method: 'post',
+    response: ({ body }) => {
+      const kw = String(body?.kw || '').trim();
+      const filtered = hotelWaiters.filter((item) => !kw || item.name.includes(kw) || item.pinCode.includes(kw));
+      return ok({
+        total: filtered.length,
+        pageSize: body?.pageSize || 10,
+        pageNum: body?.pageNum || 1,
+        records: filtered,
+      });
+    },
+  },
+  {
+    url: '/api/webapi/portal/waiter/add',
+    method: 'post',
+    response: ({ body }) => {
+      hotelWaiters = [...hotelWaiters, { id: Date.now(), name: body?.name || '', pinCode: body?.pinCode || '' }];
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/waiter/edit',
+    method: 'post',
+    response: ({ body }) => {
+      hotelWaiters = hotelWaiters.map((item) =>
+        item.id === Number(body?.id) ? { ...item, name: body?.name || '', pinCode: body?.pinCode || '' } : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/waiter/del',
+    method: 'post',
+    response: ({ body }) => {
+      const ids = (body?.ids || []).map(Number);
+      hotelWaiters = hotelWaiters.filter((item) => !ids.includes(item.id));
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/operation-record/page',
+    method: 'post',
+    response: ({ body }) => {
+      const kw = String(body?.condition || '').trim();
+      const filtered = hotelOperationRecords.filter(
+        (item) => !kw || item.room.includes(kw) || item.staff.includes(kw) || item.code.includes(kw),
+      );
+      return ok({
+        total: filtered.length,
+        pageSize: body?.pageSize || 10,
+        pageNum: body?.pageNum || 1,
+        records: filtered,
+      });
+    },
+  },
+  {
+    url: '/api/webapi/portal/room-type/list',
+    method: 'get',
+    response: () => ok({ total: hotelRoomTypes.length, page_num: 1, page_size: 30, data: hotelRoomTypes }),
+  },
+  {
+    url: '/api/webapi/portal/room-type/admin/add',
+    method: 'post',
+    response: ({ body }) => {
+      hotelRoomTypes = [...hotelRoomTypes, { id: Date.now(), name: body?.name || '', cup: Number(body?.cup || 1) }];
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room-type/admin/edit',
+    method: 'post',
+    response: ({ body }) => {
+      hotelRoomTypes = hotelRoomTypes.map((item) =>
+        item.id === Number(body?.id) ? { ...item, name: body?.name || '', cup: Number(body?.cup || 1) } : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room-type/admin/delete',
+    method: 'delete',
+    response: ({ body }) => {
+      hotelRoomTypes = hotelRoomTypes.filter((item) => item.id !== Number(body?.id));
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room-type/admin/bind',
+    method: 'post',
+    response: ({ body }) => {
+      const ids = (body?.id || []).map(Number);
+      return ok(hotelRooms.filter((item) => ids.includes(item.room_type_id)));
+    },
+  },
+  {
+    url: '/api/webapi/portal/position/list',
+    method: 'get',
+    response: () => ok(hotelPositions),
+  },
+  {
+    url: '/api/webapi/portal/position/admin/add',
+    method: 'post',
+    response: ({ body }) => {
+      const row = { id: Date.now(), name: body?.name || '', pid: Number(body?.pid || 0), children: body?.pid ? null : [] };
+      if (row.pid === 0) {
+        hotelPositions = [...hotelPositions, row];
+      } else {
+        hotelPositions = hotelPositions.map((item) =>
+          item.id === row.pid ? { ...item, children: [...(item.children || []), row] } : item,
+        );
+      }
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/position/admin/edit',
+    method: 'post',
+    response: ({ body }) => {
+      hotelPositions = hotelPositions.map((building) => {
+        if (building.id === Number(body?.id)) return { ...building, name: body?.name || '' };
+        return {
+          ...building,
+          children: (building.children || []).map((floor) =>
+            floor.id === Number(body?.id) ? { ...floor, name: body?.name || '' } : floor,
+          ),
+        };
+      });
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/position/admin/delete',
+    method: 'delete',
+    response: ({ body }) => {
+      const id = Number(body?.id);
+      hotelPositions = hotelPositions
+        .filter((item) => item.id !== id)
+        .map((building) => ({ ...building, children: (building.children || []).filter((floor) => floor.id !== id) }));
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/position/admin/bind',
+    method: 'get',
+    response: ({ query }) => {
+      const id = Number(query?.id);
+      const building = hotelPositions.find((item) => item.id === id);
+      const ids = building ? [id, ...(building.children || []).map((child) => child.id)] : [id];
+      return ok(hotelRooms.filter((item) => ids.includes(item.position_id)));
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/admin/list',
+    method: 'get',
+    response: ({ query }) => {
+      const kw = String(query?.kw || '').trim();
+      const filtered = hotelRooms.filter((item) => {
+        const matchKw = !kw || item.room_number.includes(kw) || item.extension.includes(kw);
+        const matchPosition = !query?.position_id || item.position_id === Number(query.position_id);
+        const matchRoomType = !query?.room_type_id || item.room_type_id === Number(query.room_type_id);
+        const matchStatus = !query?.status || item.status === Number(query.status);
+        return matchKw && matchPosition && matchRoomType && matchStatus;
+      });
+      return ok({
+        total: filtered.length,
+        page_num: Number(query?.pageNum || 1),
+        page_size: Number(query?.pageSize || 10),
+        data: filtered,
+      });
+    },
+  },
+  {
+    url: '/api/webapi/portal/user/user-list',
+    method: 'get',
+    response: () => ok({ total: hotelUserExtensions.length, PageNum: 0, PageSize: 50, list: hotelUserExtensions }),
+  },
+  {
+    url: '/api/webapi/portal/room/admin/add',
+    method: 'post',
+    response: ({ body }) => {
+      hotelRooms = [
+        ...hotelRooms,
+        {
+          id: Date.now(),
+          ...getHotelRoomSnapshot(body),
+          alarm_count: 0,
+          vacant: 1,
+          vip: 0,
+          repair_status: 1,
+          clean_status: 2,
+          check_status: 1,
+          guest_name: '',
+        },
+      ];
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/admin/edit',
+    method: 'post',
+    response: ({ body }) => {
+      hotelRooms = hotelRooms.map((item) =>
+        item.id === Number(body?.id)
+          ? {
+              ...item,
+              ...getHotelRoomSnapshot(body),
+            }
+          : item,
+      );
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/admin/add/bulk',
+    method: 'post',
+    response: ({ body }) => {
+      const rows = Array.isArray(body) ? body : [];
+      hotelRooms = [
+        ...hotelRooms,
+        ...rows.map((row, index) => ({
+          id: Date.now() + index,
+          ...getHotelRoomSnapshot(row),
+          alarm_count: 0,
+          vacant: 1,
+          vip: 0,
+          repair_status: 1,
+          clean_status: 2,
+          check_status: 1,
+          guest_name: '',
+        })),
+      ];
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/admin/edit/bulk',
+    method: 'post',
+    response: ({ body }) => {
+      const ids = (body?.ids || []).map(Number);
+      hotelRooms = hotelRooms.map((item) => {
+        if (!ids.includes(item.id)) return item;
+        const next = { ...item };
+        if (body?.position_id != null) {
+          const floor = hotelPositions.flatMap((pos) => pos.children || []).find((pos) => pos.id === Number(body.position_id));
+          const building = hotelPositions.find((pos) => (pos.children || []).some((child) => child.id === Number(body.position_id)));
+          next.position_id = Number(body.position_id);
+          next.position = `${building?.name || ''}-${floor?.name || ''}`;
+        }
+        if (body?.room_type_id != null) {
+          const roomType = hotelRoomTypes.find((type) => type.id === Number(body.room_type_id));
+          next.room_type_id = Number(body.room_type_id);
+          next.room_type = roomType?.name || next.room_type;
+          next.room_cup = roomType?.cup || next.room_cup;
+        }
+        if (body?.status != null) next.status = Number(body.status);
+        return next;
+      });
+      return ok();
+    },
+  },
+  {
+    url: '/api/webapi/portal/room/admin/delete',
+    method: 'delete',
+    response: ({ body }) => {
+      const ids = (body?.id || []).map(Number);
+      hotelRooms = hotelRooms.filter((item) => !ids.includes(item.id));
       return ok();
     },
   },

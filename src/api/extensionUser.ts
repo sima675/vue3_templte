@@ -154,7 +154,7 @@ export const addPromptApi = (payload: any) =>
 
 // 删除提示语
 export const deletePromptApi = (id: number) =>
-  del('/webapi/portal/prompt', { id });
+  del('/webapi/portal/prompt', undefined, { params: { id } });
 
 // 获取通话记录
 export const getCallRecordPageApi = (payload: any) =>
@@ -171,6 +171,155 @@ export const getMessagePageApi = (payload: any) =>
 // 获取语音邮箱
 export const getVoicemailPageApi = (payload: any) =>
   post('/webapi/portal/voicemail/page', payload);
+
+/* 酒店业务 */
+export const getHotelRoomListApi = (params: any) =>
+  get('/webapi/portal/room/list', params);
+
+export const setHotelRoomRepairStatusApi = (payload: any) =>
+  put('/webapi/portal/room/repair-status', payload);
+
+export const setHotelRoomCleanStatusApi = (payload: any) =>
+  put('/webapi/portal/room/clean-status', payload);
+
+export const setHotelRoomCheckStatusApi = (payload: any) =>
+  put('/webapi/portal/room/check-status', payload);
+
+export const getHotelCheckinRecordsApi = (params: any) =>
+  get('/webapi/portal/checkin-detail/list', params);
+
+export const getHotelCallRecordsApi = (payload: any) =>
+  post('/webapi/portal/cdr/page', payload);
+
+export const getHotelServiceCodeApi = () =>
+  post('/webapi/portal/service-code/list');
+
+export const saveHotelServiceCodeApi = (payload: any) =>
+  post('/webapi/portal/service-code/edit', payload);
+
+export const getHotelWaiterPageApi = (payload: any) =>
+  post('/webapi/portal/waiter/page', payload);
+
+export const addHotelWaiterApi = (payload: any) =>
+  post('/webapi/portal/waiter/add', payload);
+
+export const editHotelWaiterApi = (payload: any) =>
+  post('/webapi/portal/waiter/edit', payload);
+
+export const deleteHotelWaiterApi = (ids: number[]) =>
+  post('/webapi/portal/waiter/del', { ids });
+
+export const getHotelOperationRecordsApi = (payload: any) =>
+  post('/webapi/portal/operation-record/page', payload);
+
+export const getHotelRoomTypesApi = () =>
+  get('/webapi/portal/room-type/list');
+
+export const addHotelRoomTypeApi = (payload: any) =>
+  post('/webapi/portal/room-type/admin/add', payload);
+
+export const editHotelRoomTypeApi = (payload: any) =>
+  post('/webapi/portal/room-type/admin/edit', payload);
+
+export const deleteHotelRoomTypeApi = (id: number) =>
+  del('/webapi/portal/room-type/admin/delete', { id });
+
+export const getHotelRoomTypeBindApi = (id: number[]) =>
+  post('/webapi/portal/room-type/admin/bind', { id });
+
+export const getHotelPositionsApi = () =>
+  get('/webapi/portal/position/list');
+
+export const addHotelPositionApi = (payload: any) =>
+  post('/webapi/portal/position/admin/add', payload);
+
+export const editHotelPositionApi = (payload: any) =>
+  post('/webapi/portal/position/admin/edit', payload);
+
+export const deleteHotelPositionApi = (id: number) =>
+  del('/webapi/portal/position/admin/delete', { id });
+
+export const getHotelPositionBindApi = (id: number) =>
+  get('/webapi/portal/position/admin/bind', { id });
+
+export const getHotelAdminRoomPageApi = (params: any) =>
+  get('/webapi/portal/room/admin/list', params);
+
+export const getHotelUserListApi = (params: any) =>
+  get('/webapi/portal/user/user-list', params);
+
+export const addHotelRoomApi = (payload: any) =>
+  post('/webapi/portal/room/admin/add', payload);
+
+export const editHotelRoomApi = (payload: any) =>
+  post('/webapi/portal/room/admin/edit', payload);
+
+export const deleteHotelRoomsApi = (id: number[]) =>
+  del('/webapi/portal/room/admin/delete', { id });
+
+export const addHotelRoomsBulkApi = (payload: any[]) =>
+  post('/webapi/portal/room/admin/add/bulk', payload);
+
+export const editHotelRoomsBulkApi = (payload: any) =>
+  post('/webapi/portal/room/admin/edit/bulk', payload);
+
+/* 话务台 */
+export const getOperatorQueuesApi = () =>
+  get('/webapi/portal/queue/queue-operator');
+
+export const getCallQueueListApi = () =>
+  get('/webapi/portal/queue/list');
+
+export const signInQueueApi = (payload: any) =>
+  post('/webapi/portal/queue/sign-in', payload);
+
+export const getOperatorCallRecordsApi = (payload: any) =>
+  post('/webapi/portal/cdr/page', payload);
+
+export const getQueueLineUpApi = (payload: any) =>
+  post('/webapi/portal/queue/line-up', payload);
+
+export const getQueueAnchorApi = (queue_num: string) =>
+  get('/webapi/portal/queue/anchor', { queue_num });
+
+export const getQueueCallMonitorApi = (number: string) =>
+  get('/webapi/portal/queue/call-monitor', { number });
+
+export const getQueueSipListApi = (payload: any) =>
+  post('/webapi/portal/queue/sip-list', payload);
+
+export const getQueueOperatorListApi = (payload: any) =>
+  post('/webapi/portal/queue/operator-list', payload);
+
+export const getQueueNightStatusApi = (payload: any) =>
+  post('/webapi/portal/queue/night-status', payload);
+
+export const getNightStrategyPageApi = (payload: any) =>
+  post('/webapi/portal/nightwear-strategy/page', payload);
+
+export const addNightStrategyApi = (payload: any) =>
+  post('/webapi/portal/nightwear-strategy/add', payload);
+
+export const editNightStrategyApi = (payload: any) =>
+  post('/webapi/portal/nightwear-strategy/edit', payload);
+
+export const deleteNightStrategyApi = (id: number) =>
+  get('/webapi/portal/nightwear-strategy/del', { id });
+
+export const hotUpdateNightStrategyApi = (strategyId: number) =>
+  get('/webapi/portal/nightwear-strategy/hot-update', { strategyId });
+
+export const findNightStrategyApi = (queueIndex: string) =>
+  get('/webapi/portal/nightwear-strategy/find-strategy', { queueIndex });
+
+export const setNightStrategyApi = (payload: any) =>
+  post('/webapi/portal/nightwear-strategy/set-strategy', payload);
+
+export const getOperatorDataOverviewApi = (params: any) =>
+  get('/webapi/portal/cdr/data', params);
+
+export const getOperatorExtensionStatsApi = (payload: any) =>
+  post('/webapi/portal/cdr/extension-page', payload);
 
 /* 文件 */
 // 上传文件

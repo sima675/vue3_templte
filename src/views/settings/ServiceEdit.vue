@@ -26,7 +26,7 @@
                 <div class="label-with-actions">
                   <span>个人邮箱提示语</span>
                   <span class="prompt-actions">
-                    <a-button type="link" size="small">管理</a-button>
+                    <a-button type="link" size="small" @click="promptManageVisible = true">管理</a-button>
                     <a-button type="link" size="small" @click="promptVisible = true">新建提示语</a-button>
                   </span>
                 </div>
@@ -47,7 +47,7 @@
         <a-row :gutter="80">
           <a-col v-for="item in transferFields" :key="item.key" :span="12">
             <a-form-item :label="item.label">
-              <a-select v-model:value="formModel[item.key]">
+              <a-select v-model:value="formModel[item.key]" :disabled="isForwardDisabled(item.key)">
                 <a-select-option value="off">关闭</a-select-option>
                 <a-select-option value="voicemail">语音信箱</a-select-option>
                 <a-select-option value="extension">SIP分机号</a-select-option>
@@ -56,6 +56,14 @@
                 <a-select-option value="ivr">IVR</a-select-option>
                 <a-select-option value="other">其它号码</a-select-option>
               </a-select>
+            </a-form-item>
+            <a-form-item v-if="needForwardDestination(formModel[item.key])" :label="`${item.label}目的地`">
+              <a-input
+                v-model:value="formModel[item.dstKey]"
+                :disabled="isForwardDisabled(item.key)"
+                placeholder="请输入号码或目的地"
+                maxlength="32"
+              />
             </a-form-item>
           </a-col>
         </a-row>
@@ -122,6 +130,18 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <a-modal v-model:visible="promptManageVisible" title="管理提示语" :footer="null" width="720px">
+      <a-table :columns="promptColumns" :data-source="prompts" row-key="id" size="small" :pagination="false">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'action'">
+            <a-popconfirm title="确认删除该提示语？" @confirm="handleDeletePrompt(record.id)">
+              <a-button type="link" size="small" danger>删除</a-button>
+            </a-popconfirm>
+          </template>
+        </template>
+      </a-table>
+    </a-modal>
   </div>
 </template>
 
@@ -129,6 +149,7 @@
   import { FileAddOutlined, InfoCircleOutlined, LeftOutlined } from '@ant-design/icons-vue';
   import {
     addPromptApi,
+    deletePromptApi,
     getBusinessSettingApi,
     getPromptListApi,
     saveBusinessSettingApi,
@@ -139,6 +160,7 @@
   const router = useRouter();
   const { createMessage } = useMessage();
   const promptVisible = ref(false);
+  const promptManageVisible = ref(false);
   const loading = ref(false);
   const saving = ref(false);
   const promptSaving = ref(false);
@@ -148,9 +170,13 @@
     mailboxPassword: '',
     prompt: undefined,
     unconditional: 'off',
+    unconditionalDst: '',
     unregistered: 'off',
+    unregisteredDst: '',
     busy: 'off',
+    busyDst: '',
     noAnswer: 'off',
+    noAnswerDst: '',
     ringStrategy: 'sequential',
     sipOrder: '2',
     appOrder: '1',
@@ -161,14 +187,22 @@
     fileUrl: '',
   });
   const transferFields = [
-    { key: 'unconditional', label: '无条件呼叫转移' },
-    { key: 'unregistered', label: '未注册呼叫转移' },
-    { key: 'busy', label: '遇忙呼叫转移' },
-    { key: 'noAnswer', label: '无应答呼叫转移' },
+    { key: 'unconditional', dstKey: 'unconditionalDst', label: '无条件呼叫转移' },
+    { key: 'unregistered', dstKey: 'unregisteredDst', label: '未注册呼叫转移' },
+    { key: 'busy', dstKey: 'busyDst', label: '遇忙呼叫转移' },
+    { key: 'noAnswer', dstKey: 'noAnswerDst', label: '无应答呼叫转移' },
+  ];
+  const promptColumns = [
+    { title: '名称', dataIndex: 'name', key: 'name' },
+    { title: '描述', dataIndex: 'describe', key: 'describe' },
+    { title: '文件', dataIndex: 'fileUrl', key: 'fileUrl' },
+    { title: '操作', key: 'action', width: 90 },
   ];
 
   const fromForwardValue = (value: string) => (value === 'Deactivate' ? 'off' : value || 'off');
   const toForwardValue = (value: string) => (value === 'off' ? 'Deactivate' : value);
+  const needForwardDestination = (value: string) => !['off', 'voicemail'].includes(value);
+  const isForwardDisabled = (key: string) => key !== 'unconditional' && formModel.unconditional !== 'off';
 
   const loadData = async () => {
     loading.value = true;
@@ -182,9 +216,13 @@
       formModel.mailboxPassword = business?.voicemail_passwd || '';
       formModel.prompt = business?.voicemail_greeting || undefined;
       formModel.unconditional = fromForwardValue(business?.forward_uncondition);
+      formModel.unconditionalDst = business?.forward_uncondition_dst || '';
       formModel.unregistered = fromForwardValue(business?.forward_unregister);
+      formModel.unregisteredDst = business?.forward_unregister_dst || '';
       formModel.busy = fromForwardValue(business?.forward_busy);
+      formModel.busyDst = business?.forward_busy_dst || '';
       formModel.noAnswer = fromForwardValue(business?.forward_noreply);
+      formModel.noAnswerDst = business?.forward_noreply_dst || '';
       formModel.ringStrategy = business?.strategy || 'sequential';
 
       const ringSeque = Array.isArray(business?.ring_seque)
@@ -199,6 +237,17 @@
   };
 
   const handleSave = async () => {
+    const invalidForward = transferFields.some(
+      (item) =>
+        !isForwardDisabled(item.key) &&
+        needForwardDestination(formModel[item.key]) &&
+        !String(formModel[item.dstKey] || '').trim(),
+    );
+    if (invalidForward) {
+      createMessage.warning('请填写已开启呼叫转移的目的地');
+      return;
+    }
+
     saving.value = true;
     try {
       await saveBusinessSettingApi({
@@ -206,13 +255,13 @@
         voicemail_passwd: formModel.mailboxPassword,
         voicemail_greeting: formModel.prompt || '',
         forward_uncondition: toForwardValue(formModel.unconditional),
-        forward_uncondition_dst: '',
+        forward_uncondition_dst: formModel.unconditionalDst || '',
         forward_unregister: toForwardValue(formModel.unregistered),
-        forward_unregister_dst: '',
+        forward_unregister_dst: formModel.unregisteredDst || '',
         forward_busy: toForwardValue(formModel.busy),
-        forward_busy_dst: '',
+        forward_busy_dst: formModel.busyDst || '',
         forward_noreply: toForwardValue(formModel.noAnswer),
-        forward_noreply_dst: '',
+        forward_noreply_dst: formModel.noAnswerDst || '',
         forward_noreply_timeout: '',
         strategy: formModel.ringStrategy,
         ring_seque: [formModel.sipOrder, formModel.appOrder],
@@ -254,6 +303,15 @@
     } finally {
       promptSaving.value = false;
     }
+  };
+
+  const handleDeletePrompt = async (id: number) => {
+    await deletePromptApi(id);
+    if (prompts.value.find((item) => item.id === id)?.fileUrl === formModel.prompt) {
+      formModel.prompt = undefined;
+    }
+    prompts.value = await getPromptListApi();
+    createMessage.success('删除成功');
   };
 
   onMounted(loadData);
