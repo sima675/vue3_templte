@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
 import { store } from '/@/store';
-import fetchApi from '/@/api/user';
 import { RouteRecordRaw } from 'vue-router';
-import constantRoutes, { accessRoutes, publicRoutes } from '/@/router/router.config';
+import { accessRoutes } from '/@/router/router.config';
 import { filterAsyncRoutes } from '/@/utils/permission';
 
 interface PermissioState {
@@ -66,11 +65,13 @@ export const usePermissioStore = defineStore({
      * @description 获取当前用户权限
      */
     async fetchAuths() {
-      const res = await fetchApi.permission();
-      if (res) {
-        this.setAuth(res.auths, res.modules);
-        this.setIsAdmin(res.is_admin || 0);
-      }
+      const res = {
+        auths: [],
+        modules: [],
+        is_admin: 1 as const,
+      };
+      this.setAuth(res.auths, res.modules);
+      this.setIsAdmin(res.is_admin);
       return res;
     },
 
@@ -79,21 +80,14 @@ export const usePermissioStore = defineStore({
      * @description: 获取路由
      */
     async buildRoutesAction(): Promise<RouteRecordRaw[]> {
-      // 404 路由一定要放在 权限路由后面
-      let routes: RouteRecordRaw[] = [...constantRoutes, ...accessRoutes, ...publicRoutes];
-
+      // constantRoutes + publicRoutes 已在 router.config 默认导出中与 createRouter 一并注册，
+      // 此处只返回需动态挂载的门户路由（accessRoutes），避免重复 addRoute。
+      // 普通用户可按 modules 过滤；管理员走全部门户菜单。
       if (this.getIsAdmin !== 1) {
-        // 普通用户
-        // 1. 方案一：过滤每个路由模块涉及的接口权限，判断是否展示该路由
-        // 2. 方案二：直接检索接口权限列表是否包含该路由模块，不做细分，axios同一拦截
-        routes = [
-          ...constantRoutes,
-          ...filterAsyncRoutes(accessRoutes, this.modules),
-          ...publicRoutes,
-        ];
+        return filterAsyncRoutes(accessRoutes, this.modules);
       }
 
-      return routes;
+      return [...accessRoutes];
     },
 
     // /**

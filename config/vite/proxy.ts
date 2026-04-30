@@ -17,6 +17,7 @@ const ret: ProxyTargetList = {
   [API_BASE_URL]: {
     target: API_TARGET_URL,
     changeOrigin: true,
+    secure: false,
     rewrite: (path) => path.replace(new RegExp(`^${API_BASE_URL}`), ''),
   },
   // mock

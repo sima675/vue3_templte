@@ -268,6 +268,12 @@ const constantRoutes: RouteRecordRaw[] = [
     meta: { title: '登录' },
   },
   {
+    path: '/first-login',
+    name: 'first-login',
+    component: () => import('/@/views/login/FirstLogin.vue'),
+    meta: { title: '首次登录' },
+  },
+  {
     path: '/',
     name: 'Root',
     redirect: '/app',
@@ -299,10 +305,12 @@ export const publicRoutes = [
   },
 ];
 
+const baseRoutes: RouteRecordRaw[] = [...constantRoutes, ...accessRoutes, ...publicRoutes];
+
 // /**
 //  * 基础路由
 //  * @type { *[] }
 //  */
 // export const constantRouterMap = [];
 
-export default constantRoutes;
+export default baseRoutes;

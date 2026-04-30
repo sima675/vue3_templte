@@ -25,8 +25,10 @@
       :columns="columns"
       :data-source="messages"
       :row-selection="{ selectedRowKeys: [] }"
-      :pagination="false"
+      :pagination="pagination"
+      :loading="loading"
       row-key="id"
+      @change="handleTableChange"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'status'">
@@ -47,7 +49,9 @@
 
 <script setup lang="ts">
   import { DeleteOutlined, DownloadOutlined, EditOutlined, PlayCircleOutlined } from '@ant-design/icons-vue';
+  import { getMessagePageApi } from '/@/api/extensionUser';
 
+  const loading = ref(false);
   const filters = reactive({ status: 'all', keyword: '' });
   const columns = [
     { title: '状态', key: 'status', width: 80 },
@@ -60,10 +64,62 @@
     { title: '备注', dataIndex: 'remark', key: 'remark' },
     { title: '操作', key: 'action', width: 180 },
   ];
-  const messages = [
-    { id: 1, played: false, name: '赵吉', caller: '8003', org: '-', duration: '00:00:05', time: '2025-01-20 14:00:20', size: '82.86KB', remark: '-' },
-    { id: 2, played: true, name: '李东方', caller: '70019', org: '-', duration: '00:00:12', time: '2025-01-18 09:21:10', size: '126.20KB', remark: '已回拨' },
-  ];
+  const messages = ref<any[]>([]);
+  const pagination = reactive({ total: 0, current: 1, pageSize: 10, showSizeChanger: true });
+
+  const formatDuration = (value: string | number) => {
+    if (String(value || '').includes(':')) return String(value);
+    const total = Number(value || 0);
+    const h = String(Math.floor(total / 3600)).padStart(2, '0');
+    const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+    const s = String(total % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
+
+  const toMessage = (item: any) => ({
+    id: item.id || item.uuid,
+    played: Boolean(item.played || item.status === 'read'),
+    name: item.name || item.caller_name || '-',
+    caller: item.caller || item.caller_number || item.from || '-',
+    org: item.org || item.organization || item.department || '-',
+    duration: formatDuration(item.duration),
+    time: item.time || item.create_at || item.start_time || '-',
+    size: item.size || item.file_size || '-',
+    remark: item.remark || '-',
+    raw: item,
+  });
+
+  const loadMessages = async () => {
+    loading.value = true;
+    try {
+      const res = await getMessagePageApi({
+        status: filters.status === 'all' ? null : filters.status,
+        condition: filters.keyword || null,
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize,
+      });
+      messages.value = (res?.records || []).map(toMessage);
+      pagination.total = res?.total || 0;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const handleTableChange = (page: any) => {
+    pagination.current = page.current;
+    pagination.pageSize = page.pageSize;
+    loadMessages();
+  };
+
+  watch(
+    () => [filters.status, filters.keyword],
+    () => {
+      pagination.current = 1;
+      loadMessages();
+    },
+  );
+
+  onMounted(loadMessages);
 </script>
 
 <style lang="less" scoped>

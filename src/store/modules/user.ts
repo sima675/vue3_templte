@@ -2,8 +2,10 @@ import { defineStore } from 'pinia';
 import { store } from '/@/store';
 import { ReqParams } from '/@/api/user/model';
 import fetchApi from '/@/api/user';
+import { getLoginPublicKeyApi, loginByAccountApi, logoutByAccountApi } from '/@/api/extensionUser';
 // import { encryptByDES } from '/@/utils/crypto';
-import { getToken, setToken, removeToken, setAccountType, removeAccountType } from '/@/utils/auth';
+import { encryptBySu2PublicKey } from '/@/utils/su2Crypto';
+import { getToken, setToken, removeToken, setAccountType, removeAccountType, clearFirstLoginPending, getAccountType } from '/@/utils/auth';
 import { router } from '/@/router';
 
 interface UserState {
@@ -19,7 +21,7 @@ export const useUserStore = defineStore({
     token: '',
     // auths
     auths: [],
-    accountType: '',
+    accountType: getAccountType(),
   }),
   getters: {
     getToken(): string {
@@ -43,6 +45,22 @@ export const useUserStore = defineStore({
      * @description: login
      */
     async login(params: ReqParams) {
+      if (params.loginType === 'personal') {
+        const { key } = await getLoginPublicKeyApi();
+        const res = await loginByAccountApi({
+          acc: params.username,
+          passwd: encryptBySu2PublicKey(params.password, key),
+          clientType: 'portal',
+        });
+
+        if (res) {
+          this.setToken(res.token);
+          this.accountType = 'personal';
+          setAccountType(this.accountType);
+        }
+        return res;
+      }
+
       // 密码加密
       // params.password = encryptByDES(params.password);
       const res = await fetchApi.login(params);
@@ -59,9 +77,17 @@ export const useUserStore = defineStore({
      * @description: logout
      */
     async logout() {
+      try {
+        if (this.accountType === 'personal') {
+          await logoutByAccountApi();
+        }
+      } catch {
+        // 退出时接口失败也继续清理本地登录态，避免用户被卡在当前页面。
+      }
       this.resetState();
       removeToken();
       removeAccountType();
+      clearFirstLoginPending();
       router.replace('/login');
       // 路由表重置
       location.reload();

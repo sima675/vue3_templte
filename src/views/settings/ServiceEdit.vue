@@ -7,7 +7,7 @@
       </a-space>
     </div>
 
-    <a-form :model="formModel" layout="vertical" class="service-form">
+    <a-form :model="formModel" layout="vertical" class="service-form" :disabled="loading">
       <section class="form-section">
         <div class="section-title">
           <span>语音邮箱</span>
@@ -31,8 +31,10 @@
                   </span>
                 </div>
               </template>
-              <a-select v-model:value="formModel.prompt">
-                <a-select-option value="adsasda">adsasda</a-select-option>
+              <a-select v-model:value="formModel.prompt" allow-clear>
+                <a-select-option v-for="prompt in prompts" :key="prompt.fileUrl" :value="prompt.fileUrl">
+                  {{ prompt.name }}
+                </a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -95,19 +97,26 @@
       <div class="form-footer">
         <a-space>
           <a-button @click="router.back()">取消</a-button>
-          <a-button type="primary">保存</a-button>
+          <a-button type="primary" :loading="saving" @click="handleSave">保存</a-button>
         </a-space>
       </div>
     </a-form>
 
-    <a-modal v-model:visible="promptVisible" title="新建提示语" ok-text="确定" cancel-text="取消">
+    <a-modal
+      v-model:visible="promptVisible"
+      title="新建提示语"
+      ok-text="确定"
+      cancel-text="取消"
+      :confirm-loading="promptSaving"
+      @ok="handleCreatePrompt"
+    >
       <a-form layout="vertical">
-        <a-form-item label="名称" required><a-input placeholder="请输入" /></a-form-item>
-        <a-form-item label="描述"><a-input placeholder="请输入" /></a-form-item>
+        <a-form-item label="名称" required><a-input v-model:value="promptForm.name" placeholder="请输入" /></a-form-item>
+        <a-form-item label="描述"><a-input v-model:value="promptForm.describe" placeholder="请输入" /></a-form-item>
         <a-form-item label="提示语文件">
-          <a-upload-dragger>
+          <a-upload-dragger :before-upload="handlePromptUpload" :show-upload-list="false">
             <p class="upload-icon"><FileAddOutlined /></p>
-            <p>点击或将文件拖拽到这里上传</p>
+            <p>{{ promptForm.fileUrl || '点击或将文件拖拽到这里上传' }}</p>
             <p class="upload-tip">支持扩展名：.wav，3M以内</p>
           </a-upload-dragger>
         </a-form-item>
@@ -118,13 +127,26 @@
 
 <script setup lang="ts">
   import { FileAddOutlined, InfoCircleOutlined, LeftOutlined } from '@ant-design/icons-vue';
+  import {
+    addPromptApi,
+    getBusinessSettingApi,
+    getPromptListApi,
+    saveBusinessSettingApi,
+    uploadFileApi,
+  } from '/@/api/extensionUser';
+  import { useMessage } from '/@/hooks/useMessage';
 
   const router = useRouter();
+  const { createMessage } = useMessage();
   const promptVisible = ref(false);
+  const loading = ref(false);
+  const saving = ref(false);
+  const promptSaving = ref(false);
+  const prompts = ref<any[]>([]);
   const formModel = reactive<Record<string, any>>({
     voicemail: true,
-    mailboxPassword: '123456',
-    prompt: 'adsasda',
+    mailboxPassword: '',
+    prompt: undefined,
     unconditional: 'off',
     unregistered: 'off',
     busy: 'off',
@@ -133,12 +155,108 @@
     sipOrder: '2',
     appOrder: '1',
   });
+  const promptForm = reactive({
+    name: '',
+    describe: '',
+    fileUrl: '',
+  });
   const transferFields = [
     { key: 'unconditional', label: '无条件呼叫转移' },
     { key: 'unregistered', label: '未注册呼叫转移' },
     { key: 'busy', label: '遇忙呼叫转移' },
     { key: 'noAnswer', label: '无应答呼叫转移' },
   ];
+
+  const fromForwardValue = (value: string) => (value === 'Deactivate' ? 'off' : value || 'off');
+  const toForwardValue = (value: string) => (value === 'off' ? 'Deactivate' : value);
+
+  const loadData = async () => {
+    loading.value = true;
+    try {
+      const [business, promptList] = await Promise.all([
+        getBusinessSettingApi(),
+        getPromptListApi(),
+      ]);
+
+      formModel.voicemail = business?.voicemail === 'on';
+      formModel.mailboxPassword = business?.voicemail_passwd || '';
+      formModel.prompt = business?.voicemail_greeting || undefined;
+      formModel.unconditional = fromForwardValue(business?.forward_uncondition);
+      formModel.unregistered = fromForwardValue(business?.forward_unregister);
+      formModel.busy = fromForwardValue(business?.forward_busy);
+      formModel.noAnswer = fromForwardValue(business?.forward_noreply);
+      formModel.ringStrategy = business?.strategy || 'sequential';
+
+      const ringSeque = Array.isArray(business?.ring_seque)
+        ? business.ring_seque
+        : String(business?.ring_seque || '2,1').split(',');
+      formModel.sipOrder = ringSeque[0] || '2';
+      formModel.appOrder = ringSeque[1] || '1';
+      prompts.value = promptList || [];
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const handleSave = async () => {
+    saving.value = true;
+    try {
+      await saveBusinessSettingApi({
+        voicemail: formModel.voicemail ? 'on' : 'off',
+        voicemail_passwd: formModel.mailboxPassword,
+        voicemail_greeting: formModel.prompt || '',
+        forward_uncondition: toForwardValue(formModel.unconditional),
+        forward_uncondition_dst: '',
+        forward_unregister: toForwardValue(formModel.unregistered),
+        forward_unregister_dst: '',
+        forward_busy: toForwardValue(formModel.busy),
+        forward_busy_dst: '',
+        forward_noreply: toForwardValue(formModel.noAnswer),
+        forward_noreply_dst: '',
+        forward_noreply_timeout: '',
+        strategy: formModel.ringStrategy,
+        ring_seque: [formModel.sipOrder, formModel.appOrder],
+        apply: '',
+      });
+      createMessage.success('保存成功');
+      router.back();
+    } finally {
+      saving.value = false;
+    }
+  };
+
+  const handlePromptUpload = async (file: File) => {
+    promptForm.fileUrl = await uploadFileApi(file, 'prompt');
+    createMessage.success('上传成功');
+    return false;
+  };
+
+  const handleCreatePrompt = async () => {
+    if (!promptForm.name || !promptForm.fileUrl) {
+      createMessage.warning('请填写名称并上传提示语文件');
+      return;
+    }
+
+    promptSaving.value = true;
+    try {
+      await addPromptApi({
+        name: promptForm.name,
+        describe: promptForm.describe,
+        fileUrl: promptForm.fileUrl,
+      });
+      createMessage.success('新建成功');
+      promptVisible.value = false;
+      formModel.prompt = promptForm.fileUrl;
+      promptForm.name = '';
+      promptForm.describe = '';
+      promptForm.fileUrl = '';
+      prompts.value = await getPromptListApi();
+    } finally {
+      promptSaving.value = false;
+    }
+  };
+
+  onMounted(loadData);
 </script>
 
 <style lang="less" scoped>

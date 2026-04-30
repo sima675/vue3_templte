@@ -9,7 +9,7 @@ export function configMockPlugin(isBuild: boolean) {
     ignore: /^\_/,
     mockPath: 'mock',
     localEnabled: !isBuild,
-    prodEnabled: isBuild, // 演示模板默认保留生产 mock，便于直接打包展示
+    prodEnabled: false,
     // 开发环境无需关心
     // injectCode 只受prodEnabled影响
     // https://github.com/anncwb/vite-plugin-mock/issues/9

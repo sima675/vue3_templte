@@ -3,32 +3,32 @@
     <h2>信息维护</h2>
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane key="basic" tab="基本设置">
-        <a-card title="基础信息" :bordered="false">
+        <a-card title="基础信息" :bordered="false" :loading="loading">
           <template #extra><a-button type="primary">编辑</a-button></template>
           <a-descriptions :column="3">
             <a-descriptions-item label="头像">
-              <a-avatar :size="72" class="avatar">一</a-avatar>
+              <a-avatar :size="72" class="avatar" :src="avatarUrl">{{ userInitial }}</a-avatar>
             </a-descriptions-item>
-            <a-descriptions-item label="姓名">诸葛一</a-descriptions-item>
-            <a-descriptions-item label="分机号">8008</a-descriptions-item>
-            <a-descriptions-item label="手机号">13912358962</a-descriptions-item>
-            <a-descriptions-item label="办公号码">-</a-descriptions-item>
+            <a-descriptions-item label="姓名">{{ fullName }}</a-descriptions-item>
+            <a-descriptions-item label="分机号">{{ userInfo.extensionNo || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="手机号">{{ userInfo.phoneNumber || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="办公号码">{{ userInfo.officePhoneNumber || '-' }}</a-descriptions-item>
           </a-descriptions>
         </a-card>
 
-        <a-card title="其他信息" :bordered="false" class="mt16">
+        <a-card title="其他信息" :bordered="false" class="mt16" :loading="loading">
           <template #extra><a-button type="primary">编辑</a-button></template>
           <a-descriptions :column="3">
-            <a-descriptions-item label="主叫名">8008</a-descriptions-item>
-            <a-descriptions-item label="组织">-</a-descriptions-item>
-            <a-descriptions-item label="部门">-</a-descriptions-item>
-            <a-descriptions-item label="职位">-</a-descriptions-item>
-            <a-descriptions-item label="邮箱">-</a-descriptions-item>
-            <a-descriptions-item label="备用手机">-</a-descriptions-item>
-            <a-descriptions-item label="家庭号码">-</a-descriptions-item>
-            <a-descriptions-item label="传真号码">-</a-descriptions-item>
-            <a-descriptions-item label="地址">-</a-descriptions-item>
-            <a-descriptions-item label="备注">-</a-descriptions-item>
+            <a-descriptions-item label="主叫名">{{ userInfo.callerName || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="组织">{{ userInfo.organization || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="部门">{{ userInfo.department || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="职位">{{ userInfo.position || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="邮箱">{{ userInfo.mailbox || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="备用手机">{{ userInfo.alternatePhoneNumber || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="家庭号码">{{ userInfo.fixedPhoneNumber || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="传真号码">{{ userInfo.faxPhoneNumber || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="地址">{{ userInfo.address || '-' }}</a-descriptions-item>
+            <a-descriptions-item label="备注">{{ userInfo.remarks || '-' }}</a-descriptions-item>
           </a-descriptions>
         </a-card>
       </a-tab-pane>
@@ -50,13 +50,53 @@
 
 <script setup lang="ts">
   import { InfoCircleOutlined } from '@ant-design/icons-vue';
+  import {
+    getCurrentSecurityQuestionsApi,
+    getFileDownloadUrl,
+    getPasswordStrengthApi,
+    getUserInfoApi,
+  } from '/@/api/extensionUser';
 
   const activeKey = ref('basic');
-  const securityItems = [
-    { title: 'SIP注册密码', desc: '当前密码强度：中' },
-    { title: '应用密码', desc: '当前密码强度：强' },
-    { title: '密保问题', desc: '已设置' },
-  ];
+  const loading = ref(false);
+  const userInfo = ref<Record<string, any>>({});
+  const passwordStrength = ref<Record<string, any>>({});
+  const securityQuestions = ref<any[]>([]);
+
+  const fullName = computed(() => {
+    const name = `${userInfo.value.lastName || ''}${userInfo.value.firstName || ''}`;
+    return name || userInfo.value.extensionNo || '-';
+  });
+  const userInitial = computed(() => fullName.value.slice(0, 1) || '用');
+  const avatarUrl = computed(() =>
+    userInfo.value.photo ? getFileDownloadUrl(userInfo.value.photo) : '',
+  );
+  const strengthText = (value: number | string | undefined) => {
+    const map: Record<string, string> = { 1: '弱', 2: '中', 3: '强' };
+    return map[String(value || '')] || '未知';
+  };
+  const securityItems = computed(() => [
+    { title: 'SIP注册密码', desc: `当前密码强度：${strengthText(passwordStrength.value.pwdStrength)}` },
+    { title: '应用密码', desc: `当前密码强度：${strengthText(passwordStrength.value.dinlinkPwdStrength)}` },
+    { title: '密保问题', desc: securityQuestions.value.length ? '已设置' : '未设置' },
+  ]);
+
+  const loadProfile = async () => {
+    loading.value = true;
+    try {
+      userInfo.value = await getUserInfoApi();
+      const [strength, questions] = await Promise.all([
+        getPasswordStrengthApi(),
+        getCurrentSecurityQuestionsApi(userInfo.value.extensionNo),
+      ]);
+      passwordStrength.value = strength || {};
+      securityQuestions.value = questions || [];
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  onMounted(loadProfile);
 </script>
 
 <style lang="less" scoped>

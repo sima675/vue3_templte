@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
   import { useUserStore } from '/@/store/modules/user';
+  import { setFirstLoginPending } from '/@/utils/auth';
 
   type LoginType = 'admin' | 'personal';
 
@@ -100,9 +101,9 @@
 
   const checked = ref(true);
   const formModel = reactive({
-    username: 'admin',
-    password: '123456',
-    loginType: 'admin' as LoginType,
+    username: '8000',
+    password: '12345678a',
+    loginType: 'personal' as LoginType,
   });
 
   const accountPlaceholder = computed(() =>
@@ -111,8 +112,8 @@
 
   const handleTypeChange = (value: LoginType) => {
     formModel.loginType = value;
-    formModel.username = value === 'personal' ? '1001' : 'admin';
-    formModel.password = '123456';
+    formModel.username = value === 'personal' ? '8000' : 'admin';
+    formModel.password = value === 'personal' ? '12345678a' : '123456';
   };
 
   const handleFinish = async () => {
@@ -120,6 +121,13 @@
     const res = await userStore.login({ ...formModel });
     loading.value = false;
     if (res) {
+      if (formModel.loginType === 'personal' && (res as any)?.user?.ifFirstLogin) {
+        const acc =
+          String((res as any).user?.sipExtension ?? formModel.username ?? '').trim();
+        setFirstLoginPending(acc || formModel.username);
+        router.replace('/first-login');
+        return;
+      }
       router.replace('/');
     }
   };

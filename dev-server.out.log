@@ -1,0 +1,16 @@
+
+> vue3-admin-template@1.0.0 dev
+> vite --host 127.0.0.1 --port 5174 --strictPort
+
+serve development
+
+  [32m[1mVITE[22m v4.5.14[39m  [2mready in [0m[1m1015[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5174[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh[22m[2m to show help[22m
+[2m17:09:27[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist/index.html[22m
+17:16:31 [vite:mock] mock file change D:\code\vue3_templte\mock\su2.ts
+17:19:33 [vite:mock] mock file change D:\code\vue3_templte\mock\su2.ts
+17:20:14 [vite:mock] mock file change D:\code\vue3_templte\mock\su2.ts
+17:25:04 [vite:mock] mock file change D:\code\vue3_templte\mock\su2.ts
+17:25:40 [vite:mock] mock file change D:\code\vue3_templte\mock\su2.ts
